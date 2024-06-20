@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: manual-db-backup
+spec:
+  template:
+    spec:
+      containers:
+      - name: backup
+        image: strobson/backup-container:latest
+        env:
+        - name: DB_HOST
+          value: "mysql-service"
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_NAME
+          value: "db-name"
+        - name: DB_USER
+        
+          valueFrom:
+              secretKeyRef:
+                  name: senhas           # The ConfigMap this value comes from.
+                  key: MYSQL_ENV_DB_USER # The key to fetch.   
+        - name: DB_PASSWORD
+
+          valueFrom:
+              secretKeyRef:
+                  name: senhas           # The ConfigMap this value comes from.
+                  key: DB_PASSWORD # The key to fetch.
+        - name: AWS_ACCESS_KEY_ID
+
+          valueFrom:
+          secretKeyRef:
+                  name: senhas           # The ConfigMap this value comes from.
+                  key: AWS_ACCESS_KEY_ID # The key to fetch.
+        - name: AWS_SECRET_ACCESS_KEY
+
+          valueFrom:
+          secretKeyRef:
+                  name: senhas           # The ConfigMap this value comes from.
+                  key: AWS_SECRET_ACCESS_KEY # The key to fetch.
+        - name: AWS_REGION
+
+          valueFrom:
+          configMapKeyRef:
+              name: dados           # The ConfigMap this value comes from.
+              key: AWS_REGION # The key to fetch.
+        - name: S3_BUCKET
+        
+          valueFrom:
+          configMapKeyRef:
+              name: dados           # The ConfigMap this value comes from.
+              key: S3_BUCKET # The key to fetch.
+      restartPolicy: OnFailure
